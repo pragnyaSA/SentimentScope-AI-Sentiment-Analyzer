@@ -1,31 +1,23 @@
-from transformers import pipeline
+from textblob import TextBlob
 import pandas as pd
 import os
 import shutil
 from fastapi.responses import JSONResponse
 
-nlp = None
-
-def get_pipeline():
-    global nlp
-    if nlp is None:
-        nlp = pipeline("sentiment-analysis", truncation=True, max_length=512)
-    return nlp
-
 PROJECT_TEMP_DIR = os.path.join(os.getcwd(), "temp_storage")
 os.makedirs(PROJECT_TEMP_DIR, exist_ok=True)
 
-def generate(data: str):
-    return get_pipeline()(data)
+def generate(text: str):
+    analysis = TextBlob(text)
+    polarity = analysis.sentiment.polarity
+    if polarity >= 0:
+        return [{"label": "POSITIVE", "score": round((polarity + 1) / 2, 4)}]
+    else:
+        return [{"label": "NEGATIVE", "score": round((1 - polarity) / 2, 4)}]
 
 def analyze_csv(file_path):
-    print("inside analyze csv!!!!!!!!!")
     try:
-        try:
-            df = pd.read_csv(file_path)
-        except Exception as e:
-            print(f"Error reading CSV file: {e}")
-
+        df = pd.read_csv(file_path)
         required_columns = {"id", "text", "timestamp"}
         if not required_columns.issubset(df.columns):
             missing_columns = required_columns - set(df.columns)
@@ -33,7 +25,6 @@ def analyze_csv(file_path):
                 content={"error": f"Missing required columns: {', '.join(missing_columns)}"},
                 status_code=400,
             )
-
         sentiments = []
         for _, row in df.iterrows():
             result = generate(row["text"])
@@ -44,9 +35,7 @@ def analyze_csv(file_path):
                 "confidence": result[0]["score"],
                 "timestamp": row["timestamp"]
             })
-
         return sentiments
-
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
