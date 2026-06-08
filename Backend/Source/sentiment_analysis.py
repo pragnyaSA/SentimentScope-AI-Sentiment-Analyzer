@@ -4,13 +4,19 @@ import os
 import shutil
 from fastapi.responses import JSONResponse
 
-nlp = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+nlp = None
+
+def get_pipeline():
+    global nlp
+    if nlp is None:
+        nlp = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+    return nlp
 
 PROJECT_TEMP_DIR = os.path.join(os.getcwd(), "temp_storage")
 os.makedirs(PROJECT_TEMP_DIR, exist_ok=True)
 
 def generate(data: str):
-    return nlp(data)
+    return get_pipeline()(data)
 
 def analyze_csv(file_path):
     print("inside analyze csv!!!!!!!!!")
