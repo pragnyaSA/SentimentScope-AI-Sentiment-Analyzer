@@ -6,7 +6,7 @@ import axios from 'axios';
 import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from './firebase-config';
 import './styles.css';
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "https://sentimentscope-backend-zq8h.onrender.com"; // ✅ Fixed: was "http://localhost:8000"
 
 function App() {
   const [chartData, setChartData] = useState(null);
@@ -34,6 +34,9 @@ function App() {
   const handleAnalyzeSentiment = async () => {
     setLoading(true);
     try {
+      // ✅ Wake up Render server first (free tier spins down after inactivity)
+      await axios.get(`${API_BASE_URL}/`);
+
       if (!uploadedFile) throw new Error('No file uploaded');
       const formData = new FormData();
       formData.append('file', uploadedFile);
@@ -244,8 +247,6 @@ function App() {
           </>
         )}
       </div>
-
-
     </div>
   );
 }
