@@ -6,7 +6,7 @@ import axios from 'axios';
 import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from './firebase-config';
 import './styles.css';
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "https://sentimentscope-backend-zq8h.onrender.com";
 
 function App() {
   const [chartData, setChartData] = useState(null);
