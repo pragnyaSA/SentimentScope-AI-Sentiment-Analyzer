@@ -41,7 +41,7 @@ const FileUpload = ({ onUploadSuccess, fileUploaded, onAnalyze, loading }) => {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      await axios.post('http://localhost:8000/upload', formData, {
+      await axios.post('https://sentimentscope-backend-zq8h.onrender.com/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setUploaded(true);
