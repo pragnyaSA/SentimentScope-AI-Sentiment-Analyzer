@@ -74,15 +74,36 @@ const SentimentChart = ({ sentimentData }) => {
 
   const uniqueDates = [...new Set(chartData.map(i => i.date))].sort();
 
-  const avgConfByDateSentiment = (data, dateList) =>
+  const avgConfByDate = (data, dateList) =>
     dateList.map(d => {
       const items = data.filter(i => new Date(i.timestamp).toLocaleDateString() === d);
       if (items.length === 0) return null;
       return parseFloat((items.reduce((a, b) => a + b.confidence, 0) / items.length).toFixed(3));
     });
 
-  const posConf = avgConfByDateSentiment(positiveData, uniqueDates);
-  const negConf = avgConfByDateSentiment(negativeData, uniqueDates);
+  const posConf = avgConfByDate(positiveData, uniqueDates);
+  const negConf = avgConfByDate(negativeData, uniqueDates);
+
+  // Build heatmap annotations to show values inside cells
+  const annotations = [];
+  uniqueDates.forEach((date, i) => {
+    if (posConf[i] !== null) {
+      annotations.push({
+        x: date, y: 'POSITIVE',
+        text: `${(posConf[i] * 100).toFixed(0)}%`,
+        font: { color: '#0a0f1e', size: 11, family: 'DM Sans, sans-serif' },
+        showarrow: false,
+      });
+    }
+    if (negConf[i] !== null) {
+      annotations.push({
+        x: date, y: 'NEGATIVE',
+        text: `${(negConf[i] * 100).toFixed(0)}%`,
+        font: { color: '#0a0f1e', size: 11, family: 'DM Sans, sans-serif' },
+        showarrow: false,
+      });
+    }
+  });
 
   return (
     <div className="chart-container">
@@ -180,67 +201,50 @@ const SentimentChart = ({ sentimentData }) => {
         />
       </ChartCard>
 
-      {/* ✅ Fixed Heatmap — two separate bar traces, clearly differentiated */}
+      {/* ✅ Heatmap — POSITIVE row teal, NEGATIVE row coral, values shown inside */}
       <ChartCard title="Confidence heatmap">
         <Plot
           data={[
             {
-              // POSITIVE row — electric/teal colorscale
               x: uniqueDates,
-              y: uniqueDates.map(() => 'POSITIVE'),
-              z: [posConf],
+              y: ['POSITIVE'],
+              z: [posConf.map(v => v === null ? 0 : v * 100)],
               type: 'heatmap',
-              name: 'Positive',
               colorscale: [
-                [0,   '#0a2a2e'],
-                [0.5, '#0e7490'],
+                [0,   '#051820'],
+                [0.3, '#0e4d5e'],
+                [0.6, '#0e9ab5'],
                 [1,   ELECTRIC],
               ],
-              zmin: 0.5,
-              zmax: 1.0,
-              showscale: true,
-              colorbar: {
-                x: 1.02,
-                title: { text: 'Pos conf', font: { color: TEXT_SEC, size: 10 }, side: 'right' },
-                tickfont: { color: TEXT_MUT, size: 9 },
-                thickness: 10,
-                tickformat: '.0%',
-                len: 0.45,
-                y: 0.75,
-              },
+              zmin: 0,
+              zmax: 100,
+              showscale: false,
               hoverongaps: false,
+              hovertemplate: 'Date: %{x}<br>Positive Confidence: %{z:.1f}%<extra></extra>',
             },
             {
-              // NEGATIVE row — coral/red colorscale
               x: uniqueDates,
-              y: uniqueDates.map(() => 'NEGATIVE'),
-              z: [negConf],
+              y: ['NEGATIVE'],
+              z: [negConf.map(v => v === null ? 0 : v * 100)],
               type: 'heatmap',
-              name: 'Negative',
               colorscale: [
-                [0,   '#2e0a14'],
-                [0.5, '#9f1239'],
+                [0,   '#200508'],
+                [0.3, '#5e0e17'],
+                [0.6, '#b5142a'],
                 [1,   CORAL],
               ],
-              zmin: 0.5,
-              zmax: 1.0,
-              showscale: true,
-              colorbar: {
-                x: 1.02,
-                title: { text: 'Neg conf', font: { color: TEXT_SEC, size: 10 }, side: 'right' },
-                tickfont: { color: TEXT_MUT, size: 9 },
-                thickness: 10,
-                tickformat: '.0%',
-                len: 0.45,
-                y: 0.25,
-              },
+              zmin: 0,
+              zmax: 100,
+              showscale: false,
               hoverongaps: false,
+              hovertemplate: 'Date: %{x}<br>Negative Confidence: %{z:.1f}%<extra></extra>',
             },
           ]}
           layout={{
             ...baseLayout,
             height: 260,
-            margin: { t: 10, r: 100, b: 60, l: 90 },
+            margin: { t: 10, r: 30, b: 60, l: 90 },
+            annotations,
             xaxis: {
               ...baseLayout.xaxis,
               title: { text: 'Date', font: { color: TEXT_MUT, size: 11 } },
