@@ -4,7 +4,6 @@ import Plot from 'react-plotly.js';
 const ELECTRIC = '#6ee7f7';
 const CORAL = '#ff6b8a';
 const NAVY2 = '#111827';
-const NAVY3 = '#0a0f1e';
 const TEXT_SEC = '#8896b3';
 const TEXT_MUT = '#4a5568';
 
@@ -70,7 +69,6 @@ const SentimentChart = ({ sentimentData }) => {
   const positiveCounts = dates.map(d => sentimentByDate[d].positive);
   const negativeCounts = dates.map(d => sentimentByDate[d].negative);
 
-  // Separate heatmap data by sentiment for clear differentiation
   const positiveData = sentimentData.filter(i => i.sentiment === 'POSITIVE');
   const negativeData = sentimentData.filter(i => i.sentiment === 'NEGATIVE');
 
@@ -150,7 +148,7 @@ const SentimentChart = ({ sentimentData }) => {
         />
       </ChartCard>
 
-      {/* Bar Chart — named traces so no "trace 0" */}
+      {/* Bar Chart */}
       <ChartCard title="Sentiment counts">
         <Plot
           data={[
@@ -182,29 +180,59 @@ const SentimentChart = ({ sentimentData }) => {
         />
       </ChartCard>
 
-      {/* Heatmap — two clearly distinct rows with contrasting colors */}
+      {/* ✅ Fixed Heatmap — two separate bar traces, clearly differentiated */}
       <ChartCard title="Confidence heatmap">
         <Plot
           data={[
             {
+              // POSITIVE row — electric/teal colorscale
               x: uniqueDates,
-              y: ['POSITIVE', 'NEGATIVE'],
-              z: [posConf, negConf],
+              y: uniqueDates.map(() => 'POSITIVE'),
+              z: [posConf],
               type: 'heatmap',
+              name: 'Positive',
               colorscale: [
-                [0,   '#1a0a2e'],
-                [0.2, '#3b1f5e'],
-                [0.4, CORAL],
-                [0.7, '#f9a825'],
+                [0,   '#0a2a2e'],
+                [0.5, '#0e7490'],
                 [1,   ELECTRIC],
               ],
-              zmin: 0.8,
+              zmin: 0.5,
               zmax: 1.0,
+              showscale: true,
               colorbar: {
-                title: { text: 'Confidence', font: { color: TEXT_SEC, size: 11 }, side: 'right' },
-                tickfont: { color: TEXT_MUT, size: 10 },
-                thickness: 12,
+                x: 1.02,
+                title: { text: 'Pos conf', font: { color: TEXT_SEC, size: 10 }, side: 'right' },
+                tickfont: { color: TEXT_MUT, size: 9 },
+                thickness: 10,
                 tickformat: '.0%',
+                len: 0.45,
+                y: 0.75,
+              },
+              hoverongaps: false,
+            },
+            {
+              // NEGATIVE row — coral/red colorscale
+              x: uniqueDates,
+              y: uniqueDates.map(() => 'NEGATIVE'),
+              z: [negConf],
+              type: 'heatmap',
+              name: 'Negative',
+              colorscale: [
+                [0,   '#2e0a14'],
+                [0.5, '#9f1239'],
+                [1,   CORAL],
+              ],
+              zmin: 0.5,
+              zmax: 1.0,
+              showscale: true,
+              colorbar: {
+                x: 1.02,
+                title: { text: 'Neg conf', font: { color: TEXT_SEC, size: 10 }, side: 'right' },
+                tickfont: { color: TEXT_MUT, size: 9 },
+                thickness: 10,
+                tickformat: '.0%',
+                len: 0.45,
+                y: 0.25,
               },
               hoverongaps: false,
             },
@@ -212,7 +240,7 @@ const SentimentChart = ({ sentimentData }) => {
           layout={{
             ...baseLayout,
             height: 260,
-            margin: { t: 10, r: 80, b: 60, l: 80 },
+            margin: { t: 10, r: 100, b: 60, l: 90 },
             xaxis: {
               ...baseLayout.xaxis,
               title: { text: 'Date', font: { color: TEXT_MUT, size: 11 } },
