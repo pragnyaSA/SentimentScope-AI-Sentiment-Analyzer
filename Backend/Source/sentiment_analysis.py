@@ -9,7 +9,7 @@ nlp = None
 def get_pipeline():
     global nlp
     if nlp is None:
-        nlp = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+        nlp = pipeline("sentiment-analysis", truncation=True, max_length=512)
     return nlp
 
 PROJECT_TEMP_DIR = os.path.join(os.getcwd(), "temp_storage")
